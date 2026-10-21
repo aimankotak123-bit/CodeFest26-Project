@@ -5,22 +5,20 @@ import {
   ArrowRight,
   Award,
   BarChart3,
+  Brain,
   BrainCircuit,
+  Calendar,
   Check,
   ChevronRight,
   Clock3,
   FileText,
-  FileType2,
   Flame,
   Headphones,
   Home,
-  Languages,
-  LayoutGrid,
   Lightbulb,
-  ListChecks,
   Map,
   Menu,
-  MessageCircle,
+  MessageSquareText,
   MoreHorizontal,
   Pause,
   Play,
@@ -30,173 +28,70 @@ import {
   Sparkles,
   Target,
   Trash2,
+  Trophy,
   UploadCloud,
   Volume2,
   X,
   Zap,
 } from 'lucide-react';
 
-type Language = 'en' | 'ms';
-type View = 'dashboard' | 'study' | 'modules' | 'insights' | 'achievements' | 'history';
-type StudyTab = 'flashcards' | 'audio' | 'visual' | 'materials';
+type View = 'overview' | 'recall' | 'gaps' | 'rankings' | 'timeline' | 'debate';
+type StudyTab = 'debate' | 'flashcards' | 'podcast' | 'mindmap';
 type Rating = 'Hard' | 'Good' | 'Easy';
 type PodcastMode = 'eli5' | 'brief' | 'deep';
 type UploadedFile = { name: string; type: string; size: string };
+type ChatRole = 'ai' | 'user';
+type ChatMessage = { id: number; role: ChatRole; text: string; defenseOptions?: DefenseOption[]; resolved?: 'correct' | 'wrong' };
+type DefenseOption = { letter: 'A' | 'B' | 'C'; text: string; correct: boolean };
 
-const copy = {
-  en: {
-    hello: 'Good morning, Aina',
-    subtitle: 'Ready to make your knowledge stick?',
-    uploadHeroTitle: 'Upload your lecture to start studying',
-    uploadHeroBody: 'Drop a PDF, Word document, or PowerPoint deck here. The AI will read it and build a personalized study session for you.',
-    uploadHeroCta: 'Choose a file',
-    supported: 'PDF, Word (.docx), PowerPoint (.pptx) up to 25 MB',
-    overview: 'Learning overview',
-    thisWeek: 'This week',
-    mastery: 'Mastery points',
-    streak: 'Day streak',
-    hours: 'Focus hours',
-    keepGoing: 'Keep the momentum going',
-    streakLine: 'You are on a roll. One more session today keeps your streak alive.',
-    startSession: 'Start a session',
-    continueLearning: 'Continue learning',
-    viewAll: 'View all',
-    recent: 'Recent modules',
-    leaderboard: 'Leaderboard',
-    thisMonth: 'This month',
-    rank: 'Your rank',
-    study: 'Study session',
-    back: 'Back to dashboard',
-    progress: 'Session progress',
-    cards: 'cards mastered',
-    flashcards: 'Flashcards',
-    podcast: 'Podcast',
-    mindmap: 'Mind map',
-    materials: 'Materials',
-    flip: 'Click card to reveal answer',
-    hard: 'Hard',
-    good: 'Good',
-    easy: 'Easy',
-    next: 'Next card',
-    question: 'Question',
-    answer: 'Answer',
-    language: 'BM',
-    analyzing: 'Analyzing your lecture',
-    analyzingSteps: ['Extracting text from your file', 'Identifying key concepts', 'Generating flashcards & summary', 'Building your study session'],
-    ready: 'Session ready',
-    materialsTitle: 'Lecture materials',
-    materialsBody: 'Upload your lecture file here. The AI will read the content and generate flashcards, a podcast, and a mind map from it.',
-    dropHere: 'Drag your file here, or click to browse',
-    noFiles: 'No materials uploaded yet. Upload your first lecture to get started.',
-    podcastTitle: 'Recap podcast',
-    podcastBody: 'Listen to an AI-narrated recap of your lecture. Choose a style and ask questions as you listen.',
-    eli5: "Explain like I'm 5",
-    brief: 'Normal brief',
-    deep: 'Deep dive',
-    eli5Desc: 'Simple words, fun analogies',
-    briefDesc: 'A clear, balanced summary',
-    deepDesc: 'Thorough, detailed walk-through',
-    play: 'Play',
-    pause: 'Pause',
-    suggestedQuestions: 'Suggested questions',
-    askAnything: 'Ask a question about this lecture',
-    send: 'Send',
-    thinking: 'Thinking',
-    mindmapTitle: 'Mind map',
-    mindmapBody: 'Tap any node to expand it, or add your own sub-topics to build out the map.',
-    addNode: 'Add sub-topic',
-    nodeName: 'Sub-topic name',
-    comingSoon: 'This section is a draft',
-    comingSoonBody: 'This area is wired up and ready for you to adjust later. It shows a friendly placeholder for now.',
-  },
-  ms: {
-    hello: 'Selamat pagi, Aina',
-    subtitle: 'Sedia untuk menjadikan ilmu lebih kekal?',
-    uploadHeroTitle: 'Muat naik kuliah anda untuk mula belajar',
-    uploadHeroBody: 'Letak PDF, dokumen Word, atau PowerPoint di sini. AI akan membacanya dan membina sesi belajar peribadi untuk anda.',
-    uploadHeroCta: 'Pilih fail',
-    supported: 'PDF, Word (.docx), PowerPoint (.pptx) sehingga 25 MB',
-    overview: 'Ringkasan pembelajaran',
-    thisWeek: 'Minggu ini',
-    mastery: 'Mata penguasaan',
-    streak: 'Hari berturut-turut',
-    hours: 'Jam fokus',
-    keepGoing: 'Teruskan momentum',
-    streakLine: 'Anda sedang bersemangat. Satu sesi lagi hari ini memastikan rentetan anda kekal.',
-    startSession: 'Mula sesi',
-    continueLearning: 'Sambung belajar',
-    viewAll: 'Lihat semua',
-    recent: 'Modul terkini',
-    leaderboard: 'Papan pendahulu',
-    thisMonth: 'Bulan ini',
-    rank: 'Kedudukan anda',
-    study: 'Sesi pembelajaran',
-    back: 'Kembali ke papan pemuka',
-    progress: 'Kemajuan sesi',
-    cards: 'kad dikuasai',
-    flashcards: 'Kad imbas',
-    podcast: 'Podcast',
-    mindmap: 'Peta minda',
-    materials: 'Bahan',
-    flip: 'Klik kad untuk lihat jawapan',
-    hard: 'Sukar',
-    good: 'Baik',
-    easy: 'Mudah',
-    next: 'Kad seterusnya',
-    question: 'Soalan',
-    answer: 'Jawapan',
-    language: 'EN',
-    analyzing: 'Menganalisis kuliah anda',
-    analyzingSteps: ['Mengekstrak teks dari fail anda', 'Mengenal pasti konsep utama', 'Menjana kad imbas & ringkasan', 'Membina sesi belajar anda'],
-    ready: 'Sesi sedia',
-    materialsTitle: 'Bahan kuliah',
-    materialsBody: 'Muat naik fail kuliah anda di sini. AI akan membaca kandungan dan menjana kad imbas, podcast, dan peta minda.',
-    dropHere: 'Seret fail anda ke sini, atau klik untuk melayari',
-    noFiles: 'Tiada bahan dimuat naik lagi. Muat naik kuliah pertama anda untuk bermula.',
-    podcastTitle: 'Podcast ulasan',
-    podcastBody: 'Dengar ulasan bacaan AI tentang kuliah anda. Pilih gaya dan tanya soalan sambil mendengar.',
-    eli5: 'Terangkan macam umur 5',
-    brief: 'Ringkas biasa',
-    deep: 'Lengkap terperinci',
-    eli5Desc: 'Perkataan mudah, analogi menyeronokkan',
-    briefDesc: 'Ringkasan jelas dan seimbang',
-    deepDesc: 'Huraian teliti dan terperinci',
-    play: 'Main',
-    pause: 'Jeda',
-    suggestedQuestions: 'Soalan dicadangkan',
-    askAnything: 'Tanya soalan tentang kuliah ini',
-    send: 'Hantar',
-    thinking: 'Memikir',
-    mindmapTitle: 'Peta minda',
-    mindmapBody: 'Klik mana-mana nod untuk kembangkan, atau tambah sub-topik anda sendiri.',
-    addNode: 'Tambah sub-topik',
-    nodeName: 'Nama sub-topik',
-    comingSoon: 'Bahagian ini adalah draf',
-    comingSoonBody: 'Kawasan ini telah disambung dan sedia untuk anda pelaskan kemudian. Ia menunjukkan ruang letak mesra buat masa ini.',
-  },
-} as const;
-type Copy = Record<keyof typeof copy.en, string>;
-
-const modules = [
-  { title: 'Cognitive Science', meta: '12 cards · 24 min', color: 'cyan', icon: BrainCircuit, progress: 72 },
-  { title: 'Neural Networks', meta: '18 cards · 38 min', color: 'teal', icon: Zap, progress: 48 },
-  { title: 'UX Research Methods', meta: '9 cards · 16 min', color: 'orange', icon: Target, progress: 91 },
+/* ---- Hardcoded debate scenario ---- */
+const biologyDebate: DefenseOption[] = [
+  { letter: 'A', text: 'Because they have a rigid cell wall that creates turgor pressure to stop the water.', correct: true },
+  { letter: 'B', text: 'Because they close their stomata.', correct: false },
+  { letter: 'C', text: 'The water just evaporates.', correct: false },
 ];
 
-const cards = [
-  { question: 'What is the testing effect?', answer: 'The finding that actively retrieving information strengthens long-term retention more effectively than re-reading.' },
-  { question: 'Why does spaced repetition work?', answer: 'It schedules recall just as a memory begins to fade, reinforcing the neural pathway with increasing intervals.' },
-  { question: 'What is cognitive load?', answer: 'The amount of mental effort being used in working memory at one time.' },
-  { question: 'Name the three types of cognitive load.', answer: 'Intrinsic load, extraneous load, and germane load.' },
-  { question: 'What is interleaving?', answer: 'Mixing related topics or problem types during practice instead of studying one category at a time.' },
+const debateScenarios = [
+  {
+    id: 0,
+    aiPrompt: 'I scanned your biology PDF. It claims water moves to balance concentration (osmosis). But if that\'s true, why don\'t plant cells just explode when it rains heavily? Prove me wrong.',
+    options: biologyDebate,
+    successReply: 'Correct. You didn\'t rely on a silent leap in logic. The cell wall is the missing premise — it creates back-pressure that limits water intake. +50 Mastery Points awarded.',
+    wrongReply: 'Not quite. Stomata control gas exchange, not water intake pressure. The real answer is the rigid cell wall — it creates turgor pressure that physically resists further water entry. Try again.',
+  },
+  {
+    id: 1,
+    aiPrompt: 'Your notes say mitochondria are the "powerhouse of the cell." That\'s a vague cliché. If mitochondria make ATP, why can\'t the cell just use glucose directly for energy instead of converting it? Defend the process.',
+    options: [
+      { letter: 'A' as const, text: 'ATP is a universal, immediately usable energy currency; glucose releases energy too slowly and uncontrolledly for cellular work.', correct: true },
+      { letter: 'B' as const, text: 'Because glucose is toxic to the cell in high amounts.', correct: false },
+      { letter: 'C' as const, text: 'Mitochondria store glucose for later use.', correct: false },
+    ],
+    successReply: 'Exactly. ATP provides quick, controlled energy release at the right moment for specific reactions. Glucose oxidation is too blunt an instrument. +50 Mastery Points awarded.',
+    wrongReply: 'Incorrect. Glucose isn\'t toxic — it\'s the starting fuel. The point is that ATP is a controlled, universal energy currency. Glucose releases energy in large, uncontrolled bursts that the cell can\'t direct. Try again.',
+  },
+];
+
+const modules = [
+  { title: 'Cell Biology', meta: '8 debates · 22 min', color: 'emerald', icon: Brain, progress: 72 },
+  { title: 'Neural Networks', meta: '12 debates · 34 min', color: 'teal', icon: Zap, progress: 48 },
+  { title: 'UX Research Methods', meta: '6 debates · 14 min', color: 'sky', icon: Target, progress: 91 },
+];
+
+const flashcards = [
+  { question: 'What is osmosis?', answer: 'The net movement of water across a partially permeable membrane from a region of higher water potential to a region of lower water potential.' },
+  { question: 'Why don\'t plant cells burst in water?', answer: 'The rigid cell wall creates turgor pressure that pushes back against water entry, preventing the cell from bursting.' },
+  { question: 'What is turgor pressure?', answer: 'The pressure exerted by fluid inside a plant cell against the cell wall, providing structural support.' },
+  { question: 'What does ATP stand for?', answer: 'Adenosine triphosphate — the universal energy currency of cells.' },
+  { question: 'Why is ATP preferred over glucose for cellular work?', answer: 'ATP releases energy in small, controlled amounts that can be directed to specific reactions, unlike glucose which releases energy in large uncontrolled bursts.' },
 ];
 
 const peers = [
-  { name: 'Nadia Karim', points: 2680, initials: 'NK', color: 'bg-amber-400' },
-  { name: 'You', points: 2410, initials: 'AS', color: 'bg-sky-400', current: true },
-  { name: 'Daniel Wong', points: 2240, initials: 'DW', color: 'bg-teal-400' },
-  { name: 'Mei Ling', points: 1980, initials: 'ML', color: 'bg-rose-400' },
-  { name: 'Ravi Kumar', points: 1760, initials: 'RK', color: 'bg-emerald-400' },
+  { name: 'Nadia Karim', points: 2680, initials: 'NK', color: 'bg-amber-500' },
+  { name: 'You', points: 2460, initials: 'AS', color: 'bg-emerald-500', current: true },
+  { name: 'Daniel Wong', points: 2240, initials: 'DW', color: 'bg-teal-500' },
+  { name: 'Mei Ling', points: 1980, initials: 'ML', color: 'bg-sky-500' },
+  { name: 'Ravi Kumar', points: 1760, initials: 'RK', color: 'bg-rose-500' },
 ];
 
 const suggestedQuestions = [
@@ -207,20 +102,16 @@ const suggestedQuestions = [
 ];
 
 const podcastScripts: Record<PodcastMode, string> = {
-  eli5: "Okay, imagine your brain is a big toy box. When you learn something new, you drop a toy into the box. But if you never take the toy out and play with it, you forget where you put it! Active recall is like taking the toy out and looking at it again and again. Every time you try to remember it without peeking, your brain builds a stronger path to that toy. That is why quizzing yourself works way better than just reading your notes over and over. Spaced repetition is like setting a timer — you check on the toy right before you are about to forget it. That makes the memory stick for a really, really long time!",
-  brief: "Active recall is the practice of actively stimulating memory during the learning process. Instead of passively re-reading, you test yourself by trying to retrieve information from memory. Research consistently shows this is far more effective for long-term retention. Spaced repetition complements this by scheduling review sessions at increasing intervals — right before you are about to forget. Together, these two techniques form the backbone of evidence-based study strategies. The key takeaway: pull information out of your brain rather than cramming it in, and space your reviews over time.",
-  deep: "Active recall refers to the cognitive process of retrieving information from long-term memory without external cues. The testing effect, first documented by Roediger and Karpicke in 2006, demonstrates that the act of retrieval itself produces more learning than an equivalent amount of time spent studying. The mechanism is thought to involve elaborative rehearsal — by reconstructing knowledge, you strengthen the neural pathways associated with that memory trace. Spaced repetition leverages the spacing effect, first described by Ebbinghaus in 1885. The optimal interval is one that places the review just as the forgetting curve begins to descend steeply. Algorithms like SM-2 dynamically adjust these intervals based on your performance. Combined with interleaving — mixing different problem types — these methods reduce cognitive load over time and promote transfer of learning to novel contexts.",
+  eli5: "Okay, imagine your brain is a big toy box. When you learn something new, you drop a toy in. But if you never take it out and play with it, you forget where it is! Active recall is like taking the toy out and looking at it again and again. Every time you try to remember without peeking, your brain builds a stronger path to that toy. Spaced repetition is like setting a timer — you check on the toy right before you forget it. That makes the memory stick for a really long time!",
+  brief: "Active recall is the practice of actively retrieving information from memory rather than passively re-reading. Research shows this is far more effective for long-term retention. Spaced repetition complements this by scheduling reviews at increasing intervals, right before you forget. Together, these techniques form the backbone of evidence-based study strategies.",
+  deep: "Active recall refers to retrieving information from long-term memory without external cues. The testing effect, documented by Roediger and Karpicke in 2006, demonstrates that retrieval itself produces more learning than equivalent study time. Spaced repetition leverages the spacing effect, first described by Ebbinghaus in 1885. The optimal interval places the review just as the forgetting curve descends. Algorithms like SM-2 dynamically adjust intervals based on performance. Combined with interleaving, these methods promote transfer of learning to novel contexts.",
 };
 
 const podcastAnswers: Record<string, string> = {
-  'Can you summarize the main idea?':
-    'The core idea is that actively retrieving information from memory — testing yourself — strengthens long-term retention far more than passively re-reading. Pair that with spaced repetition, reviewing at increasing intervals, and you get a highly effective study strategy.',
-  'What is the most important concept?':
-    'The testing effect: the act of pulling information out of your memory is itself a powerful learning event. It is not just a measure of what you know — it is what builds the memory in the first place.',
-  'Give me a real-world example':
-    'Instead of re-reading your lecture slides on cognitive load, close them and try to write down everything you remember about the three types. Struggling to recall is exactly what strengthens the memory. Do it again tomorrow, then in three days.',
-  'What should I memorize for the exam?':
-    'Focus on the three types of cognitive load — intrinsic, extraneous, and germane — and the definitions of the testing effect and spaced repetition. Those are the high-yield concepts that tend to appear on exams.',
+  'Can you summarize the main idea?': 'The core idea is that actively retrieving information from memory — testing yourself — strengthens long-term retention far more than passively re-reading. Pair that with spaced repetition for a highly effective strategy.',
+  'What is the most important concept?': 'The testing effect: the act of pulling information out of your memory is itself a powerful learning event, not just a measure of what you know.',
+  'Give me a real-world example': 'Instead of re-reading your notes on osmosis, close them and write down everything you remember. Struggling to recall is what strengthens the memory. Repeat tomorrow, then in three days.',
+  'What should I memorize for the exam?': 'Focus on osmosis and turgor pressure, the role of ATP versus glucose, and the testing effect. Those are the high-yield concepts likely to appear.',
 };
 
 const initialMindNodes = [
@@ -231,14 +122,6 @@ const initialMindNodes = [
   { id: 'left', label: 'Elaboration', sub: 'Connect ideas', kind: 'left' as const, children: ['Analogies', 'Explain aloud'] },
 ];
 
-function fileIcon(name: string) {
-  const lower = name.toLowerCase();
-  if (lower.endsWith('.pdf')) return FileText;
-  if (lower.endsWith('.docx') || lower.endsWith('.doc')) return FileText;
-  if (lower.endsWith('.pptx') || lower.endsWith('.ppt')) return FileType2;
-  return FileText;
-}
-
 function formatSize(bytes: number) {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
@@ -246,150 +129,93 @@ function formatSize(bytes: number) {
 }
 
 function App() {
-  const [language, setLanguage] = useState<Language>('en');
-  const [view, setView] = useState<View>('dashboard');
+  const [view, setView] = useState<View>('overview');
   const [showMobileNav, setShowMobileNav] = useState(false);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [analyzeStep, setAnalyzeStep] = useState(0);
-  const [uploadedName, setUploadedName] = useState('');
-  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
-  const [activeTab, setActiveTab] = useState<StudyTab>('flashcards');
-  const [cardIndex, setCardIndex] = useState(0);
-  const [flipped, setFlipped] = useState(false);
-  const [points, setPoints] = useState(2410);
-  const t = copy[language];
-
-  useEffect(() => {
-    if (!isAnalyzing) return;
-    setAnalyzeStep(0);
-    const stepTimer = window.setInterval(() => {
-      setAnalyzeStep((s) => {
-        if (s >= t.analyzingSteps.length - 1) {
-          window.clearInterval(stepTimer);
-          window.setTimeout(() => {
-            setIsAnalyzing(false);
-            setView('study');
-            setActiveTab('flashcards');
-          }, 700);
-          return s;
-        }
-        return s + 1;
-      });
-    }, 900);
-    return () => window.clearInterval(stepTimer);
-  }, [isAnalyzing, t.analyzingSteps.length]);
-
-  const currentCard = cards[cardIndex];
-  const sessionProgress = Math.round(((cardIndex + (flipped ? 0.5 : 0)) / cards.length) * 100);
-
-  const handleFile = (file: File | undefined) => {
-    if (!file) return;
-    const entry: UploadedFile = { name: file.name, type: file.type || 'file', size: formatSize(file.size) };
-    setUploadedFiles((prev) => [entry, ...prev]);
-    setUploadedName(file.name);
-    setIsAnalyzing(true);
-  };
-
-  const handleDemoUpload = () => {
-    const entry: UploadedFile = { name: 'Cognitive Science — Week 04.pdf', type: 'application/pdf', size: '2.4 MB' };
-    setUploadedFiles((prev) => [entry, ...prev]);
-    setUploadedName(entry.name);
-    setIsAnalyzing(true);
-  };
-
-  const rateCard = (rating: Rating) => {
-    const award = rating === 'Easy' ? 30 : rating === 'Good' ? 20 : 10;
-    setPoints((value) => value + award);
-    setFlipped(false);
-    setCardIndex((value) => (value + 1) % cards.length);
-  };
+  const [points, setPoints] = useState(2460);
 
   const navSections: { heading: string; items: { label: string; icon: typeof Home; view: View; badge?: string }[] }[] = [
     {
       heading: 'Workspace',
       items: [
-        { label: 'Overview', icon: Home, view: 'dashboard' },
-        { label: 'My modules', icon: LayoutGrid, view: 'modules' },
-        { label: 'Insights', icon: BarChart3, view: 'insights' },
+        { label: 'Overview', icon: Home, view: 'overview' },
+        { label: 'Active-Recall Hub', icon: Brain, view: 'recall' },
+        { label: 'Cognitive Gaps', icon: Target, view: 'gaps' },
       ],
     },
     {
       heading: 'Your journey',
       items: [
-        { label: 'Achievements', icon: Award, view: 'achievements', badge: '8' },
-        { label: 'Study history', icon: Clock3, view: 'history' },
+        { label: 'Mastery Rankings', icon: Trophy, view: 'rankings', badge: '#2' },
+        { label: 'Repetition Timeline', icon: Calendar, view: 'timeline' },
       ],
     },
   ];
 
-  const go = (v: View) => {
-    setView(v);
-    setShowMobileNav(false);
-  };
+  const go = (v: View) => { setView(v); setShowMobileNav(false); };
 
   return (
-    <div className="min-h-screen overflow-hidden bg-[#eef3f9] text-slate-800">
+    <div className="min-h-screen overflow-hidden bg-zinc-950 text-zinc-200">
       <div className="pointer-events-none fixed inset-0 overflow-hidden">
-        <div className="aurora aurora-sky" />
+        <div className="aurora aurora-emerald" />
         <div className="aurora aurora-teal" />
-        <div className="aurora aurora-amber" />
         <div className="grid-overlay" />
       </div>
       <div className="relative z-10 flex min-h-screen">
-        <aside className="hidden w-[248px] shrink-0 flex-col border-r border-slate-200/80 bg-white/70 px-5 py-7 backdrop-blur-xl lg:flex">
+        {/* ---- Sidebar ---- */}
+        <aside className="hidden w-[250px] shrink-0 flex-col border-r border-zinc-800/80 bg-zinc-900/50 px-5 py-7 backdrop-blur-xl lg:flex">
           <Brand />
           <div className="mt-10 flex flex-1 flex-col">
             {navSections.map((section) => (
-              <div key={section.heading} className="mb-7">
-                <p className="mb-3 px-3 text-[10px] font-bold uppercase tracking-[0.22em] text-slate-400">{section.heading}</p>
+              <div key={section.heading} className="mb-6">
+                <p className="mb-3 px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-600">{section.heading}</p>
                 <nav className="space-y-1">
                   {section.items.map(({ label, icon: Icon, view: itemView, badge }) => (
                     <button key={label} onClick={() => go(itemView)} className={`nav-item ${view === itemView ? 'nav-item-active' : ''}`}>
                       <Icon size={18} strokeWidth={view === itemView ? 2.2 : 1.8} />
                       <span>{label}</span>
-                      {badge && <span className="ml-auto rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-slate-500">{badge}</span>}
-                      {view === itemView && <span className="ml-auto h-1.5 w-1.5 rounded-full bg-sky-500" />}
+                      {badge && <span className="ml-auto rounded-md bg-zinc-800 px-1.5 py-0.5 text-[10px] font-bold text-zinc-500">{badge}</span>}
                     </button>
                   ))}
                 </nav>
               </div>
             ))}
-            <div className="mt-auto rounded-2xl border border-sky-200/60 bg-gradient-to-br from-sky-50 to-teal-50 p-4">
-              <div className="mb-3 flex items-center justify-between"><Sparkles size={17} className="text-sky-500" /><span className="text-[10px] font-bold uppercase tracking-wider text-sky-600">Pro tip</span></div>
-              <p className="text-xs leading-5 text-slate-600">Short, frequent sessions beat last-minute cramming.</p>
+            <div className="mt-auto rounded-xl border border-zinc-800 bg-zinc-900/60 p-4">
+              <div className="mb-2 flex items-center gap-2"><Sparkles size={15} className="text-emerald-400" /><span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">Pro tip</span></div>
+              <p className="text-xs leading-5 text-zinc-500">Defend your knowledge out loud. If you can\'t explain it, you don\'t own it.</p>
             </div>
           </div>
-          <div className="mt-5 flex items-center gap-3 border-t border-slate-200 pt-5">
+          <div className="mt-5 flex items-center gap-3 border-t border-zinc-800 pt-5">
             <div className="avatar">AS</div>
-            <div className="min-w-0"><p className="truncate text-sm font-semibold text-slate-800">Aina Sofea</p><p className="text-[11px] text-slate-400">Level 12 learner</p></div>
-            <MoreHorizontal size={17} className="ml-auto text-slate-400" />
+            <div className="min-w-0"><p className="truncate text-sm font-semibold text-zinc-200">Aina Sofea</p><p className="text-[11px] text-zinc-600">Level 12 · Skeptic</p></div>
+            <MoreHorizontal size={16} className="ml-auto text-zinc-600" />
           </div>
         </aside>
 
+        {/* ---- Main ---- */}
         <main className="min-w-0 flex-1">
-          <header className="flex h-[82px] items-center justify-between border-b border-slate-200 bg-white/50 px-5 backdrop-blur-md sm:px-8 lg:px-10">
+          <header className="flex h-[72px] items-center justify-between border-b border-zinc-800/80 bg-zinc-950/60 px-5 backdrop-blur-md sm:px-8 lg:px-10">
             <div className="flex items-center gap-4">
-              <button onClick={() => setShowMobileNav(!showMobileNav)} className="rounded-xl border border-slate-200 bg-white p-2 lg:hidden"><Menu size={18} /></button>
+              <button onClick={() => setShowMobileNav(!showMobileNav)} className="rounded-lg border border-zinc-800 bg-zinc-900 p-2 lg:hidden"><Menu size={18} /></button>
               <div className="lg:hidden"><Brand compact /></div>
-              <div className="hidden text-sm text-slate-400 sm:block">{view === 'dashboard' ? 'Workspace / Overview' : `Workspace / ${view.charAt(0).toUpperCase() + view.slice(1)}`}</div>
+              <div className="hidden text-sm text-zinc-600 sm:block">CogniSync / {view.charAt(0).toUpperCase() + view.slice(1)}</div>
             </div>
-            <div className="flex items-center gap-3 sm:gap-5">
-              <button onClick={() => setLanguage(language === 'en' ? 'ms' : 'en')} className="language-toggle"><Languages size={15} /><span>{t.language}</span></button>
-              <div className="hidden h-7 w-px bg-slate-200 sm:block" />
-              <div className="flex items-center gap-3">
-                <div className="hidden text-right sm:block"><p className="text-xs font-semibold text-slate-700">{points.toLocaleString()} XP</p><p className="mt-0.5 text-[10px] text-slate-400">Aina Sofea</p></div>
-                <div className="avatar">AS</div>
+            <div className="flex items-center gap-4">
+              <div className="hidden items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-1.5 sm:flex">
+                <Zap size={14} className="text-emerald-400" />
+                <span className="text-xs font-bold text-zinc-200">{points.toLocaleString()}</span>
+                <span className="text-[10px] text-zinc-600">Mastery</span>
               </div>
+              <div className="avatar">AS</div>
             </div>
           </header>
 
           <AnimatePresence>
             {showMobileNav && (
-              <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="absolute left-4 right-4 top-[74px] z-30 rounded-2xl border border-slate-200 bg-white p-3 shadow-2xl lg:hidden">
+              <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="absolute left-4 right-4 top-[66px] z-30 rounded-2xl border border-zinc-800 bg-zinc-900 p-3 shadow-2xl lg:hidden">
                 {navSections.flatMap((s) => s.items).map(({ label, icon: Icon, view: itemView, badge }) => (
                   <button key={label} onClick={() => go(itemView)} className={`nav-item ${view === itemView ? 'nav-item-active' : ''}`}>
                     <Icon size={18} /><span>{label}</span>
-                    {badge && <span className="ml-auto rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-slate-500">{badge}</span>}
+                    {badge && <span className="ml-auto rounded-md bg-zinc-800 px-1.5 py-0.5 text-[10px] font-bold text-zinc-500">{badge}</span>}
                   </button>
                 ))}
               </motion.div>
@@ -397,23 +223,15 @@ function App() {
           </AnimatePresence>
 
           <AnimatePresence mode="wait">
-            {view === 'dashboard' && (
-              <Dashboard key="dashboard" t={t} points={points} onStart={() => { setView('study'); setActiveTab('flashcards'); }} onFile={handleFile} onDemoUpload={handleDemoUpload} openStudy={() => { setView('study'); setActiveTab('materials'); }} />
-            )}
-            {view === 'study' && (
-              <StudyView key="study" t={t} activeTab={activeTab} setActiveTab={setActiveTab} currentCard={currentCard} cardIndex={cardIndex} flipped={flipped} setFlipped={setFlipped} sessionProgress={sessionProgress} rateCard={rateCard} onBack={() => setView('dashboard')} uploadedFiles={uploadedFiles} onFile={handleFile} onDemoUpload={handleDemoUpload} onRemoveFile={(idx) => setUploadedFiles((prev) => prev.filter((_, i) => i !== idx))} />
-            )}
-            {view === 'modules' && <DraftView key="modules" t={t} title="My modules" icon={<LayoutGrid size={28} />} onBack={() => setView('dashboard')} />}
-            {view === 'insights' && <DraftView key="insights" t={t} title="Insights" icon={<BarChart3 size={28} />} onBack={() => setView('dashboard')} />}
-            {view === 'achievements' && <DraftView key="achievements" t={t} title="Achievements" icon={<Award size={28} />} onBack={() => setView('dashboard')} />}
-            {view === 'history' && <DraftView key="history" t={t} title="Study history" icon={<Clock3 size={28} />} onBack={() => setView('dashboard')} />}
+            {view === 'overview' && <Overview key="overview" points={points} onGo={go} onDebate={() => go('recall')} />}
+            {view === 'recall' && <RecallHub key="recall" points={points} setPoints={setPoints} onBack={() => go('overview')} />}
+            {view === 'gaps' && <DraftView key="gaps" title="Cognitive Gaps" icon={<Target size={28} />} onBack={() => go('overview')} />}
+            {view === 'rankings' && <Rankings key="rankings" onBack={() => go('overview')} />}
+            {view === 'timeline' && <DraftView key="timeline" title="Repetition Timeline" icon={<Calendar size={28} />} onBack={() => go('overview')} />}
+            {view === 'debate' && <RecallHub key="debate" points={points} setPoints={setPoints} onBack={() => go('overview')} />}
           </AnimatePresence>
         </main>
       </div>
-
-      <AnimatePresence>
-        {isAnalyzing && <AnalyzeModal step={analyzeStep} name={uploadedName} t={t} onClose={() => { setIsAnalyzing(false); setAnalyzeStep(0); }} />}
-      </AnimatePresence>
     </div>
   );
 }
@@ -422,77 +240,78 @@ function Brand({ compact = false }: { compact?: boolean }) {
   return (
     <div className={`flex items-center gap-2.5 ${compact ? '' : 'px-3'}`}>
       <div className="brand-mark"><BrainCircuit size={19} /></div>
-      <span className="text-[17px] font-bold tracking-[-0.04em] text-slate-800">cogni<span className="text-sky-500">sync</span></span>
+      <span className="text-[17px] font-bold tracking-[-0.04em] text-zinc-100">cogni<span className="text-emerald-400">sync</span></span>
     </div>
   );
 }
 
-/* ============ Dashboard ============ */
+/* ============ Overview ============ */
 
-type DashboardProps = { t: Copy; points: number; onStart: () => void; onFile: (file: File | undefined) => void; onDemoUpload: () => void; openStudy: () => void };
-function Dashboard({ t, points, onStart, onFile, onDemoUpload, openStudy }: DashboardProps) {
+function Overview({ points, onGo, onDebate }: { points: number; onGo: (v: View) => void; onDebate: () => void }) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
   return (
-    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} transition={{ duration: 0.35 }} className="mx-auto max-w-[1370px] px-5 py-8 sm:px-8 lg:px-10 lg:py-10">
-      <div className="mb-9 flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
-        <div>
-          <p className="mb-2 text-sm font-medium text-sky-500">Wednesday, 21 October 2026</p>
-          <h1 className="text-3xl font-bold tracking-[-0.04em] text-slate-800 sm:text-[38px]">{t.hello}</h1>
-          <p className="mt-2 text-sm text-slate-500">{t.subtitle}</p>
-        </div>
-        <button onClick={onStart} className="primary-button"><Plus size={17} />{t.startSession}<ArrowRight size={16} /></button>
+    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} transition={{ duration: 0.35 }} className="mx-auto max-w-[1200px] px-5 py-8 sm:px-8 lg:px-10 lg:py-10">
+      <div className="mb-8">
+        <p className="mb-2 text-sm font-medium text-emerald-400">The Skeptical Peer Engine</p>
+        <h1 className="text-3xl font-bold tracking-[-0.04em] text-zinc-50 sm:text-[40px]">Defend what you know.</h1>
+        <p className="mt-2 max-w-lg text-sm text-zinc-500">Standard AI tutors are passive. CogniSync acts as a combative study partner — it challenges your understanding with deliberate misconceptions and forces you to prove you actually know the material.</p>
       </div>
 
-      {/* ---- Prominent upload hero — first thing you see ---- */}
+      {/* ---- Upload zone ---- */}
       <div
         onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
         onDragLeave={() => setDragging(false)}
-        onDrop={(e) => { e.preventDefault(); setDragging(false); onFile(e.dataTransfer.files[0]); }}
-        className={`upload-hero mb-8 ${dragging ? 'upload-hero-active' : ''}`}
+        onDrop={(e) => { e.preventDefault(); setDragging(false); }}
+        className={`upload-zone mb-8 ${dragging ? 'upload-zone-active' : ''}`}
       >
-        <div className="upload-icon-big"><UploadCloud size={30} /></div>
+        <div className="upload-icon"><UploadCloud size={26} /></div>
         <div>
-          <h2 className="text-xl font-bold text-slate-800">{t.uploadHeroTitle}</h2>
-          <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-slate-500">{t.uploadHeroBody}</p>
+          <h2 className="text-lg font-bold text-zinc-100">Upload your syllabus or lecture PDF to initiate a debate.</h2>
+          <p className="mx-auto mt-1.5 max-w-md text-sm text-zinc-500">The AI will scan your material, find the weakest links in your understanding, and challenge you to defend them.</p>
         </div>
         <div className="flex flex-wrap items-center justify-center gap-3">
-          <button onClick={() => fileRef.current?.click()} className="primary-button"><UploadCloud size={16} />{t.uploadHeroCta}<ArrowRight size={15} /></button>
-          <button onClick={onDemoUpload} className="secondary-button"><Sparkles size={15} />Try a sample lecture</button>
+          <button onClick={() => fileRef.current?.click()} className="primary-button"><UploadCloud size={16} />Choose a file</button>
+          <button onClick={onDebate} className="secondary-button"><Sparkles size={15} />Try a sample debate</button>
         </div>
-        <p className="text-[11px] font-medium text-slate-400">{t.supported}</p>
-        <input ref={fileRef} type="file" accept=".pdf,.doc,.docx,.ppt,.pptx" className="hidden" onChange={(e) => onFile(e.target.files?.[0])} />
+        <p className="text-[11px] font-medium text-zinc-600">PDF, Word (.docx), PowerPoint (.pptx) up to 25 MB</p>
+        <input ref={fileRef} type="file" accept=".pdf,.doc,.docx,.ppt,.pptx" className="hidden" onChange={() => onDebate()} />
       </div>
 
+      {/* ---- Stats ---- */}
       <div className="mb-8 grid gap-4 sm:grid-cols-3">
-        <StatCard icon={<Zap size={19} />} label={t.mastery} value={points.toLocaleString()} change="+180 this week" accent="cyan" />
-        <StatCard icon={<Flame size={19} />} label={t.streak} value="5 days" change="Personal best: 12 days" accent="orange" />
-        <StatCard icon={<Clock3 size={19} />} label={t.hours} value="6.4h" change="+22% vs last week" accent="teal" />
+        <StatCard icon={<Zap size={19} />} label="Mastery Points" value={points.toLocaleString()} change="+50 this session" accent="emerald" />
+        <StatCard icon={<Flame size={19} />} label="Day Streak" value="5 days" change="Personal best: 12" accent="amber" />
+        <StatCard icon={<Clock3 size={19} />} label="Focus Hours" value="6.4h" change="+22% vs last week" accent="sky" />
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_330px]">
+      {/* ---- Modules + Leaderboard ---- */}
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
         <section>
           <div className="mb-4 flex items-center justify-between">
-            <div><h2 className="section-title">{t.recent}</h2><p className="mt-1 text-xs text-slate-400">Pick up where you left off</p></div>
-            <button onClick={() => openStudy()} className="subtle-button">{t.viewAll}<ChevronRight size={14} /></button>
+            <div><h2 className="section-title">Recent debates</h2><p className="mt-1 text-xs text-zinc-600">Pick up where you left off</p></div>
+            <button onClick={() => onGo('rankings')} className="subtle-button">View all<ChevronRight size={14} /></button>
           </div>
-          <div className="grid gap-4 md:grid-cols-3">{modules.map((module) => <ModuleCard key={module.title} module={module} onClick={onStart} />)}</div>
+          <div className="grid gap-4 md:grid-cols-3">{modules.map((m) => <ModuleCard key={m.title} module={m} onClick={onDebate} />)}</div>
         </section>
-        <aside className="space-y-5"><StreakCard t={t} onStart={onStart} /><Leaderboard t={t} /></aside>
+        <aside className="space-y-5">
+          <StreakCard onStart={onDebate} />
+          <Leaderboard />
+        </aside>
       </div>
     </motion.div>
   );
 }
 
-function StatCard({ icon, label, value, change, accent }: { icon: React.ReactNode; label: string; value: string; change: string; accent: 'cyan' | 'orange' | 'teal' }) {
+function StatCard({ icon, label, value, change, accent }: { icon: React.ReactNode; label: string; value: string; change: string; accent: 'emerald' | 'amber' | 'sky' }) {
   return (
     <div className="stat-card">
       <div className={`stat-icon stat-${accent}`}>{icon}</div>
       <div className="mt-5 flex items-end justify-between gap-2">
-        <div><p className="text-xs text-slate-400">{label}</p><p className="mt-1 text-2xl font-bold tracking-tight text-slate-800">{value}</p></div>
-        <span className="mb-1 rounded-md bg-emerald-50 px-2 py-1 text-[10px] font-semibold text-emerald-600">{change.split(' ')[0]}</span>
+        <div><p className="text-xs text-zinc-500">{label}</p><p className="mt-1 text-2xl font-bold tracking-tight text-zinc-50">{value}</p></div>
+        <span className="mb-1 rounded-md bg-emerald-500/10 px-2 py-1 text-[10px] font-semibold text-emerald-400">{change.split(' ')[0]}</span>
       </div>
-      <p className="mt-2 text-[10px] text-slate-400">{change}</p>
+      <p className="mt-2 text-[10px] text-zinc-600">{change}</p>
     </div>
   );
 }
@@ -503,190 +322,333 @@ function ModuleCard({ module, onClick }: { module: typeof modules[number]; onCli
     <button onClick={onClick} className="module-card group text-left">
       <div className={`module-icon module-${module.color}`}><Icon size={20} /></div>
       <div className="mt-5 flex items-start justify-between gap-2">
-        <div><h3 className="text-sm font-semibold text-slate-800">{module.title}</h3><p className="mt-1 text-[11px] text-slate-400">{module.meta}</p></div>
-        <ChevronRight size={15} className="mt-0.5 text-slate-300 transition group-hover:text-sky-500" />
+        <div><h3 className="text-sm font-semibold text-zinc-100">{module.title}</h3><p className="mt-1 text-[11px] text-zinc-600">{module.meta}</p></div>
+        <ChevronRight size={15} className="mt-0.5 text-zinc-700 transition group-hover:text-emerald-400" />
       </div>
       <div className="mt-5 flex items-center gap-3">
         <div className="progress-track"><div className={`progress-fill fill-${module.color}`} style={{ width: `${module.progress}%` }} /></div>
-        <span className="text-[10px] font-semibold text-slate-500">{module.progress}%</span>
+        <span className="text-[10px] font-semibold text-zinc-500">{module.progress}%</span>
       </div>
     </button>
   );
 }
 
-function StreakCard({ t, onStart }: { t: Copy; onStart: () => void }) {
+function StreakCard({ onStart }: { onStart: () => void }) {
   return (
     <div className="streak-card">
       <div className="flex items-start justify-between">
-        <div><p className="text-[10px] font-bold uppercase tracking-[0.18em] text-orange-500">{t.keepGoing}</p><p className="mt-2 text-2xl font-bold text-slate-800">5 <span className="text-sm font-medium text-slate-400">{t.streak}</span></p></div>
+        <div><p className="text-[10px] font-bold uppercase tracking-[0.18em] text-amber-500">Keep the momentum</p><p className="mt-2 text-2xl font-bold text-zinc-50">5 <span className="text-sm font-medium text-zinc-500">day streak</span></p></div>
         <div className="flame-orb"><Flame size={22} /></div>
       </div>
-      <div className="mt-5 flex gap-2">{['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, index) => (
-        <div key={`${day}-${index}`} className={`streak-day ${index < 5 ? 'streak-day-active' : ''}`}><span>{day}</span>{index < 5 ? <Check size={11} /> : <span className="h-1 w-1 rounded-full bg-slate-300" />}</div>
+      <div className="mt-5 flex gap-2">{['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, i) => (
+        <div key={`${day}-${i}`} className={`streak-day ${i < 5 ? 'streak-day-active' : ''}`}><span>{day}</span>{i < 5 ? <Check size={11} /> : <span className="h-1 w-1 rounded-full bg-zinc-700" />}</div>
       ))}</div>
-      <p className="mt-5 text-xs leading-5 text-slate-500">{t.streakLine}</p>
-      <button onClick={onStart} className="mt-4 flex items-center gap-1.5 text-xs font-semibold text-orange-500 transition hover:text-orange-600">{t.continueLearning}<ArrowRight size={14} /></button>
+      <p className="mt-5 text-xs leading-5 text-zinc-500">One more debate today keeps your streak alive.</p>
+      <button onClick={onStart} className="mt-4 flex items-center gap-1.5 text-xs font-semibold text-amber-500 transition hover:text-amber-400">Continue learning<ArrowRight size={14} /></button>
     </div>
   );
 }
 
-function Leaderboard({ t }: { t: Copy }) {
+function Leaderboard() {
   return (
     <div className="panel p-5">
-      <div className="mb-5 flex items-center justify-between"><div><h2 className="section-title">{t.leaderboard}</h2><p className="mt-1 text-[11px] text-slate-400">{t.thisMonth}</p></div><Award size={20} className="text-amber-500" /></div>
-      <div className="space-y-3">{peers.map((peer, index) => (
-        <div key={peer.name} className={`flex items-center gap-3 ${peer.current ? 'rounded-xl bg-sky-50 px-3 py-2.5 ring-1 ring-sky-100' : ''}`}>
-          <span className={`w-4 text-center text-xs font-bold ${index < 3 ? 'text-slate-700' : 'text-slate-300'}`}>{index + 1}</span>
+      <div className="mb-5 flex items-center justify-between"><div><h2 className="section-title">Mastery Rankings</h2><p className="mt-1 text-[11px] text-zinc-600">This month</p></div><Trophy size={20} className="text-amber-500" /></div>
+      <div className="space-y-3">{peers.map((peer, i) => (
+        <div key={peer.name} className={`flex items-center gap-3 ${peer.current ? 'rounded-xl bg-emerald-500/[0.06] px-3 py-2.5 ring-1 ring-emerald-500/10' : ''}`}>
+          <span className={`w-4 text-center text-xs font-bold ${i < 3 ? 'text-zinc-300' : 'text-zinc-700'}`}>{i + 1}</span>
           <div className={`flex h-7 w-7 items-center justify-center rounded-full text-[9px] font-bold text-white ${peer.color}`}>{peer.initials}</div>
-          <span className={`min-w-0 flex-1 truncate text-xs ${peer.current ? 'font-semibold text-slate-800' : 'text-slate-500'}`}>{peer.name}</span>
-          <span className="text-[11px] font-semibold text-slate-500">{peer.points.toLocaleString()}</span>
+          <span className={`min-w-0 flex-1 truncate text-xs ${peer.current ? 'font-semibold text-zinc-100' : 'text-zinc-500'}`}>{peer.name}</span>
+          <span className="text-[11px] font-semibold text-zinc-400">{peer.points.toLocaleString()}</span>
         </div>
       ))}</div>
-      <button className="mt-5 flex w-full items-center justify-center gap-1.5 border-t border-slate-100 pt-4 text-[11px] font-semibold text-slate-400 transition hover:text-sky-500">See full leaderboard <ChevronRight size={13} /></button>
     </div>
   );
 }
 
-/* ============ Study view ============ */
+/* ============ Recall Hub (Study session with tabs) ============ */
 
-type StudyProps = {
-  t: Copy;
-  activeTab: StudyTab;
-  setActiveTab: (tab: StudyTab) => void;
-  currentCard: typeof cards[number];
-  cardIndex: number;
-  flipped: boolean;
-  setFlipped: (flipped: boolean) => void;
-  sessionProgress: number;
-  rateCard: (rating: Rating) => void;
-  onBack: () => void;
-  uploadedFiles: UploadedFile[];
-  onFile: (file: File | undefined) => void;
-  onDemoUpload: () => void;
-  onRemoveFile: (idx: number) => void;
-};
-function StudyView({ t, activeTab, setActiveTab, currentCard, cardIndex, flipped, setFlipped, sessionProgress, rateCard, onBack, uploadedFiles, onFile, onDemoUpload, onRemoveFile }: StudyProps) {
-  const tabs: { id: StudyTab; label: string; icon: typeof FileText }[] = [
-    { id: 'materials', label: t.materials, icon: UploadCloud },
-    { id: 'flashcards', label: t.flashcards, icon: FileText },
-    { id: 'audio', label: t.podcast, icon: Headphones },
-    { id: 'visual', label: t.mindmap, icon: Map },
+function RecallHub({ points, setPoints, onBack }: { points: number; setPoints: (fn: (v: number) => number) => void; onBack: () => void }) {
+  const [activeTab, setActiveTab] = useState<StudyTab>('debate');
+  const [cardIndex, setCardIndex] = useState(0);
+  const [flipped, setFlipped] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analyzeStep, setAnalyzeStep] = useState(0);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const handleFile = (file: File | undefined) => {
+    if (!file) return;
+    setUploadedFiles((prev) => [{ name: file.name, type: file.type || 'file', size: formatSize(file.size) }, ...prev]);
+    setIsAnalyzing(true);
+  };
+
+  const handleDemoUpload = () => {
+    setUploadedFiles((prev) => [{ name: 'Biology — Lecture 04.pdf', type: 'application/pdf', size: '2.4 MB' }, ...prev]);
+    setIsAnalyzing(true);
+  };
+
+  useEffect(() => {
+    if (!isAnalyzing) return;
+    setAnalyzeStep(0);
+    const timer = window.setInterval(() => {
+      setAnalyzeStep((s) => {
+        if (s >= 3) { window.clearInterval(timer); window.setTimeout(() => setIsAnalyzing(false), 600); return s; }
+        return s + 1;
+      });
+    }, 850);
+    return () => window.clearInterval(timer);
+  }, [isAnalyzing]);
+
+  const currentCard = flashcards[cardIndex];
+  const sessionProgress = Math.round(((cardIndex + (flipped ? 0.5 : 0)) / flashcards.length) * 100);
+
+  const rateCard = (rating: Rating) => {
+    const award = rating === 'Easy' ? 30 : rating === 'Good' ? 20 : 10;
+    setPoints((v) => v + award);
+    setFlipped(false);
+    setCardIndex((v) => (v + 1) % flashcards.length);
+  };
+
+  const tabs: { id: StudyTab; label: string; icon: typeof Brain }[] = [
+    { id: 'debate', label: 'Skeptical Peer', icon: MessageSquareText },
+    { id: 'flashcards', label: 'Flashcards', icon: FileText },
+    { id: 'podcast', label: 'Podcast', icon: Headphones },
+    { id: 'mindmap', label: 'Mind map', icon: Map },
   ];
+
   return (
-    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} transition={{ duration: 0.35 }} className="mx-auto max-w-[1120px] px-5 py-8 sm:px-8 lg:px-10 lg:py-10">
-      <button onClick={onBack} className="mb-8 flex items-center gap-2 text-xs font-semibold text-slate-400 transition hover:text-sky-500"><ArrowLeft size={15} />{t.back}</button>
-      <div className="mb-8 flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
-        <div>
-          <div className="mb-3 flex items-center gap-2 text-[11px] font-semibold text-sky-500"><span className="h-1.5 w-1.5 rounded-full bg-sky-500" />{t.study} / Cognitive Science</div>
-          <h1 className="text-3xl font-bold tracking-[-0.04em] text-slate-800 sm:text-[36px]">Build stronger recall.</h1>
-          <p className="mt-2 text-sm text-slate-500">One idea at a time. Your brain will thank you.</p>
+    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} transition={{ duration: 0.35 }} className="mx-auto max-w-[1000px] px-5 py-8 sm:px-8 lg:px-10 lg:py-10">
+      <button onClick={onBack} className="mb-8 flex items-center gap-2 text-xs font-semibold text-zinc-600 transition hover:text-emerald-400"><ArrowLeft size={15} />Back to overview</button>
+
+      {/* ---- Upload inside session ---- */}
+      <div
+        onDragOver={(e) => e.preventDefault()}
+        onDrop={(e) => { e.preventDefault(); handleFile(e.dataTransfer.files[0]); }}
+        className="mb-7 flex items-center gap-4 rounded-xl border border-zinc-800 bg-zinc-900/60 px-5 py-4"
+      >
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-400"><UploadCloud size={18} /></div>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-semibold text-zinc-200">Upload lecture material for this session</p>
+          <p className="mt-0.5 text-[11px] text-zinc-600">Drag a PDF, Word, or PPTX here — the AI will analyze it and build your debate.</p>
         </div>
-        <div className="w-full sm:w-52">
-          <div className="mb-2 flex justify-between text-[10px] font-semibold uppercase tracking-wider text-slate-400"><span>{t.progress}</span><span className="text-sky-500">{sessionProgress}%</span></div>
-          <div className="progress-track h-1.5"><div className="progress-fill fill-cyan" style={{ width: `${Math.max(sessionProgress, 4)}%` }} /></div>
+        <button onClick={() => fileRef.current?.click()} className="secondary-button"><UploadCloud size={14} />Browse</button>
+        <button onClick={handleDemoUpload} className="secondary-button"><Sparkles size={14} />Sample</button>
+        <input ref={fileRef} type="file" accept=".pdf,.doc,.docx,.ppt,.pptx" className="hidden" onChange={(e) => handleFile(e.target.files?.[0])} />
+      </div>
+
+      {uploadedFiles.length > 0 && (
+        <div className="mb-6 space-y-2">
+          {uploadedFiles.map((f, i) => (
+            <div key={`${f.name}-${i}`} className="panel flex items-center gap-3 px-4 py-3">
+              <FileText size={16} className="text-emerald-400" />
+              <span className="min-w-0 flex-1 truncate text-xs font-medium text-zinc-300">{f.name}</span>
+              <span className="text-[10px] text-zinc-600">{f.size}</span>
+              <span className="rounded bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold text-emerald-400">Analyzed</span>
+              <button onClick={() => setUploadedFiles((prev) => prev.filter((_, idx) => idx !== i))} className="rounded p-1 text-zinc-700 hover:text-rose-400"><Trash2 size={14} /></button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="mb-7 flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
+        <div>
+          <div className="mb-2 flex items-center gap-2 text-[11px] font-semibold text-emerald-400"><span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />Active-Recall Hub / Cell Biology</div>
+          <h1 className="text-2xl font-bold tracking-[-0.04em] text-zinc-50 sm:text-3xl">Prove you know it.</h1>
+        </div>
+        <div className="w-full sm:w-48">
+          <div className="mb-2 flex justify-between text-[10px] font-semibold uppercase tracking-wider text-zinc-600"><span>Progress</span><span className="text-emerald-400">{sessionProgress}%</span></div>
+          <div className="progress-track h-1.5"><div className="progress-fill fill-emerald" style={{ width: `${Math.max(sessionProgress, 4)}%` }} /></div>
         </div>
       </div>
+
       <div className="study-tabs">{tabs.map(({ id, label, icon: Icon }) => (
         <button key={id} onClick={() => setActiveTab(id)} className={`study-tab ${activeTab === id ? 'study-tab-active' : ''}`}><Icon size={16} />{label}</button>
       ))}</div>
+
       <AnimatePresence mode="wait">
-        {activeTab === 'materials' && <MaterialsPanel key="materials" t={t} files={uploadedFiles} onFile={onFile} onDemoUpload={onDemoUpload} onRemove={onRemoveFile} />}
-        {activeTab === 'flashcards' && <FlashcardPanel key="flashcards" t={t} currentCard={currentCard} cardIndex={cardIndex} flipped={flipped} setFlipped={setFlipped} rateCard={rateCard} />}
-        {activeTab === 'audio' && <AudioPanel key="audio" t={t} />}
-        {activeTab === 'visual' && <VisualPanel key="visual" t={t} />}
+        {activeTab === 'debate' && <DebatePanel key="debate" points={points} setPoints={setPoints} />}
+        {activeTab === 'flashcards' && <FlashcardPanel key="flashcards" currentCard={currentCard} cardIndex={cardIndex} flipped={flipped} setFlipped={setFlipped} rateCard={rateCard} />}
+        {activeTab === 'podcast' && <PodcastPanel key="podcast" />}
+        {activeTab === 'mindmap' && <MindMapPanel key="mindmap" />}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {isAnalyzing && <AnalyzeModal step={analyzeStep} name={uploadedFiles[0]?.name || ''} onClose={() => setIsAnalyzing(false)} />}
       </AnimatePresence>
     </motion.div>
   );
 }
 
-/* ============ Materials panel (upload inside study session) ============ */
+/* ============ Skeptical Peer Chat ============ */
 
-function MaterialsPanel({ t, files, onFile, onDemoUpload, onRemove }: { t: Copy; files: UploadedFile[]; onFile: (file: File | undefined) => void; onDemoUpload: () => void; onRemove: (idx: number) => void }) {
-  const fileRef = useRef<HTMLInputElement>(null);
-  const [dragging, setDragging] = useState(false);
+function DebatePanel({ points, setPoints }: { points: number; setPoints: (fn: (v: number) => number) => void }) {
+  const [scenarioIdx, setScenarioIdx] = useState(0);
+  const [messages, setMessages] = useState<ChatMessage[]>([
+    { id: 0, role: 'ai', text: debateScenarios[0].aiPrompt, defenseOptions: debateScenarios[0].options },
+  ]);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [isThinking, setIsThinking] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => { scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' }); }, [messages, isThinking]);
+
+  const handleDefense = (msgId: number, option: DefenseOption) => {
+    const scenario = debateScenarios[scenarioIdx];
+    setMessages((prev) => prev.map((m) => m.id === msgId ? { ...m, resolved: option.correct ? 'correct' : 'wrong' } : m));
+
+    if (option.correct) {
+      setPoints((v) => v + 50);
+      setShowConfetti(true);
+      window.setTimeout(() => setShowConfetti(false), 2000);
+      window.setTimeout(() => {
+        setMessages((prev) => [...prev, { id: prev.length, role: 'ai', text: scenario.successReply }]);
+      }, 600);
+    } else {
+      setIsThinking(true);
+      window.setTimeout(() => {
+        setIsThinking(false);
+        setMessages((prev) => [...prev, { id: prev.length, role: 'ai', text: scenario.wrongReply }]);
+      }, 1200);
+    }
+  };
+
+  const nextScenario = () => {
+    const next = (scenarioIdx + 1) % debateScenarios.length;
+    setScenarioIdx(next);
+    setIsThinking(true);
+    window.setTimeout(() => {
+      setIsThinking(false);
+      setMessages((prev) => [...prev, { id: prev.length, role: 'ai', text: debateScenarios[next].aiPrompt, defenseOptions: debateScenarios[next].options }]);
+    }, 1400);
+  };
+
+  const lastMsg = messages[messages.length - 1];
+  const hasUnresolvedOptions = lastMsg?.defenseOptions && !lastMsg.resolved;
+  const lastResolvedCorrect = messages.some((m) => m.resolved === 'correct');
+
   return (
     <motion.div initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -12 }} className="mx-auto max-w-3xl">
-      <div className="mb-6"><h2 className="text-xl font-bold text-slate-800">{t.materialsTitle}</h2><p className="mt-1 text-sm text-slate-500">{t.materialsBody}</p></div>
-      <div
-        onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
-        onDragLeave={() => setDragging(false)}
-        onDrop={(e) => { e.preventDefault(); setDragging(false); onFile(e.dataTransfer.files[0]); }}
-        className={`upload-zone-compact ${dragging ? 'upload-zone-compact-active' : ''}`}
-      >
-        <div className="upload-icon"><UploadCloud size={22} /></div>
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold text-slate-700">{t.dropHere}</p>
-          <p className="mt-1 text-[11px] text-slate-400">{t.supported}</p>
-        </div>
+      <div className="mb-5 flex items-center justify-between">
+        <div><h2 className="text-lg font-bold text-zinc-50">Skeptical Peer</h2><p className="mt-1 text-xs text-zinc-600">The AI will challenge you. Defend your knowledge.</p></div>
         <div className="flex items-center gap-2">
-          <button onClick={() => fileRef.current?.click()} className="secondary-button"><UploadCloud size={15} />Browse</button>
-          <button onClick={onDemoUpload} className="ghost-button"><Sparkles size={14} />Sample</button>
+          <span className="points-badge"><Zap size={13} />{points.toLocaleString()}</span>
+          {lastResolvedCorrect && !hasUnresolvedOptions && (
+            <button onClick={nextScenario} className="primary-button"><ArrowRight size={15} />Next challenge</button>
+          )}
         </div>
-        <input ref={fileRef} type="file" accept=".pdf,.doc,.docx,.ppt,.pptx" className="hidden" onChange={(e) => onFile(e.target.files?.[0])} />
       </div>
 
-      <div className="mt-6">
-        {files.length === 0 ? (
-          <div className="draft-card flex flex-col items-center gap-3 py-12 text-center">
-            <div className="empty-illustration"><FileText size={28} /></div>
-            <p className="text-sm text-slate-500">{t.noFiles}</p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {files.map((file, idx) => {
-              const Icon = fileIcon(file.name);
-              return (
-                <div key={`${file.name}-${idx}`} className="panel flex items-center gap-4 p-4">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-sky-50 text-sky-500"><Icon size={20} /></div>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold text-slate-800">{file.name}</p>
-                    <p className="mt-0.5 text-[11px] text-slate-400">{file.size} · Analyzed · Flashcards & podcast ready</p>
+      <div className="chat-container">
+        <div ref={scrollRef} className="max-h-[520px] overflow-y-auto">
+          {messages.map((msg) => (
+            <div key={msg.id}>
+              {msg.role === 'ai' ? (
+                <div className="chat-msg-ai">
+                  <div className="chat-avatar-ai"><BrainCircuit size={18} /></div>
+                  <div className="chat-bubble-ai">
+                    <span className="chat-name-ai">Skeptical Peer</span>
+                    <p className="chat-text">{msg.text}</p>
+                    {msg.defenseOptions && (
+                      <div className="mt-4 space-y-2.5">
+                        {msg.defenseOptions.map((opt) => {
+                          const showResult = msg.resolved !== undefined;
+                          return (
+                            <button
+                              key={opt.letter}
+                              onClick={() => !msg.resolved && handleDefense(msg.id, opt)}
+                              disabled={!!msg.resolved}
+                              className={`defense-button ${showResult ? (opt.correct ? 'defense-correct' : 'defense-wrong') : ''}`}
+                            >
+                              <span className="defense-letter">{showResult && opt.correct ? <Check size={14} /> : showResult && !opt.correct ? <X size={14} /> : opt.letter}</span>
+                              <span className="defense-text">{opt.text}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                    {msg.resolved === 'correct' && (
+                      <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="mt-3">
+                        <span className="points-badge"><Check size={13} />+50 Mastery Points awarded</span>
+                      </motion.div>
+                    )}
                   </div>
-                  <span className="hidden rounded-md bg-emerald-50 px-2 py-1 text-[10px] font-bold text-emerald-600 sm:inline">Ready</span>
-                  <button onClick={() => onRemove(idx)} className="rounded-lg p-2 text-slate-300 transition hover:bg-rose-50 hover:text-rose-500"><Trash2 size={16} /></button>
                 </div>
-              );
-            })}
+              ) : (
+                <div className="chat-msg-user">
+                  <div className="chat-avatar-user">AS</div>
+                  <div className="chat-bubble-user">
+                    <span className="chat-name-user">You</span>
+                    <p className="chat-text-user">{msg.text}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+          {isThinking && (
+            <div className="chat-msg-ai">
+              <div className="chat-avatar-ai"><BrainCircuit size={18} /></div>
+              <div className="flex items-center gap-1.5 pt-2">
+                <span className="typing-dot" /><span className="typing-dot" /><span className="typing-dot" />
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Confetti animation */}
+      <AnimatePresence>
+        {showConfetti && (
+          <div className="pointer-events-none fixed inset-0 z-50 flex items-center justify-center">
+            <div className="absolute top-1/3 left-1/2 -translate-x-1/2">
+              {Array.from({ length: 20 }).map((_, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 1, y: 0, x: 0, rotate: 0 }}
+                  animate={{ opacity: 0, y: 120 + Math.random() * 80, x: (Math.random() - 0.5) * 200, rotate: Math.random() * 360 }}
+                  transition={{ duration: 1.5, ease: 'easeOut' }}
+                  className="absolute h-2 w-2 rounded-sm"
+                  style={{ background: ['#10b981', '#34d399', '#14b8a6', '#fbbf24', '#38bdf8'][i % 5] }}
+                />
+              ))}
+            </div>
           </div>
         )}
-      </div>
+      </AnimatePresence>
     </motion.div>
   );
 }
 
 /* ============ Flashcards ============ */
 
-function FlashcardPanel({ t, currentCard, cardIndex, flipped, setFlipped, rateCard }: { t: Copy; currentCard: typeof cards[number]; cardIndex: number; flipped: boolean; setFlipped: (value: boolean) => void; rateCard: (rating: Rating) => void }) {
+function FlashcardPanel({ currentCard, cardIndex, flipped, setFlipped, rateCard }: { currentCard: typeof flashcards[number]; cardIndex: number; flipped: boolean; setFlipped: (v: boolean) => void; rateCard: (r: Rating) => void }) {
   return (
     <motion.div initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -12 }} className="mx-auto max-w-3xl">
-      <div className="mb-4 flex items-center justify-between text-[11px] font-semibold text-slate-400">
-        <span>{t.question} {cardIndex + 1} of {cards.length}</span>
+      <div className="mb-4 flex items-center justify-between text-[11px] font-semibold text-zinc-600">
+        <span>Question {cardIndex + 1} of {flashcards.length}</span>
         <span className="flex items-center gap-1.5"><RotateCcw size={13} /> Active recall</span>
       </div>
       <button onClick={() => setFlipped(!flipped)} className="flashcard group">
-        <div className="absolute inset-0 rounded-[26px] bg-gradient-to-br from-sky-50/60 via-transparent to-teal-50/60" />
         <div className="relative flex h-full flex-col items-center justify-center px-8 text-center sm:px-20">
           {flipped ? (
-            <><span className="card-label card-label-answer">{t.answer}</span><p className="mt-5 max-w-xl text-xl font-semibold leading-8 tracking-[-0.02em] text-slate-800 sm:text-2xl">{currentCard.answer}</p></>
+            <><span className="card-label card-label-answer">Answer</span><p className="mt-5 max-w-xl text-xl font-semibold leading-8 tracking-[-0.02em] text-zinc-50 sm:text-2xl">{currentCard.answer}</p></>
           ) : (
-            <><span className="card-label">{t.question}</span><p className="mt-5 max-w-xl text-xl font-semibold leading-8 tracking-[-0.02em] text-slate-800 sm:text-2xl">{currentCard.question}</p><p className="absolute bottom-8 text-[11px] font-medium text-slate-400 transition group-hover:text-sky-500">{t.flip}</p></>
+            <><span className="card-label">Question</span><p className="mt-5 max-w-xl text-xl font-semibold leading-8 tracking-[-0.02em] text-zinc-50 sm:text-2xl">{currentCard.question}</p><p className="absolute bottom-8 text-[11px] font-medium text-zinc-600 transition group-hover:text-emerald-400">Click card to reveal answer</p></>
           )}
         </div>
       </button>
       <div className="mt-5 grid grid-cols-3 gap-3">
-        <button onClick={() => rateCard('Hard')} className="rating-button rating-hard"><X size={15} />{t.hard}</button>
-        <button onClick={() => rateCard('Good')} className="rating-button rating-good"><Check size={15} />{t.good}</button>
-        <button onClick={() => rateCard('Easy')} className="rating-button rating-easy"><Zap size={15} />{t.easy}</button>
+        <button onClick={() => rateCard('Hard')} className="rating-button rating-hard"><X size={15} />Hard</button>
+        <button onClick={() => rateCard('Good')} className="rating-button rating-good"><Check size={15} />Good</button>
+        <button onClick={() => rateCard('Easy')} className="rating-button rating-easy"><Zap size={15} />Easy</button>
       </div>
-      <p className="mt-6 text-center text-[11px] text-slate-400">Rate how well you knew it to personalise your next review.</p>
     </motion.div>
   );
 }
 
-/* ============ Podcast (audio + modes + Q&A) ============ */
+/* ============ Podcast ============ */
 
 type QAItem = { role: 'user' | 'ai'; text: string };
-function AudioPanel({ t }: { t: Copy }) {
+function PodcastPanel() {
   const [mode, setMode] = useState<PodcastMode>('brief');
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -697,7 +659,7 @@ function AudioPanel({ t }: { t: Copy }) {
   const intervalRef = useRef<number | null>(null);
 
   const script = podcastScripts[mode];
-  const bars = useMemo(() => Array.from({ length: 48 }, (_, index) => 18 + ((index * 17) % 42)), []);
+  const bars = useMemo(() => Array.from({ length: 48 }, (_, i) => 18 + ((i * 17) % 42)), []);
 
   const stopAudio = () => {
     if (intervalRef.current) { window.clearInterval(intervalRef.current); intervalRef.current = null; }
@@ -710,7 +672,6 @@ function AudioPanel({ t }: { t: Copy }) {
     window.speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
     u.rate = mode === 'eli5' ? 0.95 : mode === 'deep' ? 0.92 : 1;
-    u.pitch = 1;
     const voices = window.speechSynthesis.getVoices();
     const preferred = voices.find((v) => /en-US|en_GB|en-GB/i.test(v.lang));
     if (preferred) u.voice = preferred;
@@ -722,22 +683,11 @@ function AudioPanel({ t }: { t: Copy }) {
     setProgress(0);
     const totalSecs = Math.max(10, Math.round(text.length / 15));
     if (intervalRef.current) window.clearInterval(intervalRef.current);
-    intervalRef.current = window.setInterval(() => {
-      setProgress((p) => Math.min(p + 100 / totalSecs, 100));
-    }, 1000);
+    intervalRef.current = window.setInterval(() => setProgress((p) => Math.min(p + 100 / totalSecs, 100)), 1000);
   };
 
-  const togglePlay = () => {
-    if (isPlaying) { stopAudio(); setProgress(0); }
-    else playAudio(script);
-  };
-
-  const switchMode = (m: PodcastMode) => {
-    stopAudio();
-    setProgress(0);
-    setMode(m);
-  };
-
+  const togglePlay = () => { if (isPlaying) { stopAudio(); setProgress(0); } else playAudio(script); };
+  const switchMode = (m: PodcastMode) => { stopAudio(); setProgress(0); setMode(m); };
   useEffect(() => () => stopAudio(), []);
 
   const sendQuestion = (text: string) => {
@@ -747,13 +697,8 @@ function AudioPanel({ t }: { t: Copy }) {
     setQuestion('');
     setIsThinking(true);
     stopAudio();
-    const answer = podcastAnswers[q] ||
-      `Based on your lecture, here is how I would answer "${q}": the key idea is that active retrieval — trying to remember without looking — is what builds durable memory. Apply it by closing your notes and writing down everything you can recall, then checking what you missed.`;
-    window.setTimeout(() => {
-      setIsThinking(false);
-      setQaList((prev) => [...prev, { role: 'ai', text: answer }]);
-      playAudio(answer);
-    }, 1100);
+    const answer = podcastAnswers[q] || `Based on your lecture, here is how I would answer "${q}": the key idea is that active retrieval — trying to remember without looking — is what builds durable memory. Apply it by closing your notes and writing down everything you can recall, then checking what you missed.`;
+    window.setTimeout(() => { setIsThinking(false); setQaList((prev) => [...prev, { role: 'ai', text: answer }]); playAudio(answer); }, 1100);
   };
 
   const formatTime = (pct: number) => {
@@ -764,108 +709,67 @@ function AudioPanel({ t }: { t: Copy }) {
 
   return (
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} className="mx-auto max-w-3xl">
-      <div className="mb-5"><h2 className="text-xl font-bold text-slate-800">{t.podcastTitle}</h2><p className="mt-1 text-sm text-slate-500">{t.podcastBody}</p></div>
-
-      {/* Mode selection */}
+      <div className="mb-5"><h2 className="text-lg font-bold text-zinc-50">Recap podcast</h2><p className="mt-1 text-xs text-zinc-600">Listen to an AI-narrated recap. Choose a style and ask questions.</p></div>
       <div className="mb-5 grid gap-3 sm:grid-cols-3">
         {(['eli5', 'brief', 'deep'] as PodcastMode[]).map((m) => (
-          <button key={m} onClick={() => switchMode(m)} className={`mode-chip ${mode === m ? 'mode-chip-active' : ''} flex-col !items-start gap-1 !rounded-2xl !p-4`}>
-            <span className="flex items-center gap-2">
-              {m === 'eli5' && <Lightbulb size={15} />}
-              {m === 'brief' && <ListChecks size={15} />}
-              {m === 'deep' && <BrainCircuit size={15} />}
-              {m === 'eli5' ? t.eli5 : m === 'brief' ? t.brief : t.deep}
-            </span>
-            <span className={`text-[10px] font-medium ${mode === m ? 'text-sky-100' : 'text-slate-400'}`}>{m === 'eli5' ? t.eli5Desc : m === 'brief' ? t.briefDesc : t.deepDesc}</span>
+          <button key={m} onClick={() => switchMode(m)} className={`mode-chip flex-col !items-start gap-1 !rounded-xl !p-4 ${mode === m ? 'mode-chip-active' : ''}`}>
+            <span className="flex items-center gap-2">{m === 'eli5' && <Lightbulb size={15} />}{m === 'brief' && <FileText size={15} />}{m === 'deep' && <BrainCircuit size={15} />}{m === 'eli5' ? 'Explain like I\'m 5' : m === 'brief' ? 'Normal brief' : 'Deep dive'}</span>
+            <span className={`text-[10px] font-medium ${mode === m ? 'text-emerald-900' : 'text-zinc-600'}`}>{m === 'eli5' ? 'Simple words, fun analogies' : m === 'brief' ? 'Clear, balanced summary' : 'Thorough, detailed walk-through'}</span>
           </button>
         ))}
       </div>
-
-      {/* Audio player */}
       <div className="podcast-card">
         <div className="flex items-center gap-4">
-          <div className="podcast-art"><Headphones size={30} /></div>
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-sky-500">{isPlaying ? 'Now playing' : t.podcastTitle}</p>
-            <h3 className="mt-2 text-lg font-bold text-slate-800">{mode === 'eli5' ? t.eli5 : mode === 'brief' ? t.brief : t.deep} — Cognitive Science</h3>
-            <p className="mt-1 text-xs text-slate-400">AI-narrated recap from your uploaded module</p>
-          </div>
+          <div className="podcast-art"><Headphones size={28} /></div>
+          <div><p className="text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-400">{isPlaying ? 'Now playing' : 'Recap'}</p><h3 className="mt-2 text-base font-bold text-zinc-50">{mode === 'eli5' ? 'ELI5' : mode === 'brief' ? 'Brief' : 'Deep dive'} — Cell Biology</h3><p className="mt-1 text-xs text-zinc-600">AI-narrated recap from your lecture</p></div>
         </div>
-        <div className="waveform">{bars.map((height, index) => (
-          <span key={index} className={isPlaying && index % 3 !== 0 ? 'wave-active' : ''} style={{ height: `${height}%`, animationDelay: `${index * 0.035}s` }} />
-        ))}</div>
+        <div className="waveform">{bars.map((h, i) => <span key={i} className={isPlaying && i % 3 !== 0 ? 'wave-active' : ''} style={{ height: `${h}%`, animationDelay: `${i * 0.035}s` }} />)}</div>
         <div className="flex items-center gap-4">
           <button onClick={togglePlay} className="play-button">{isPlaying ? <Pause size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" />}</button>
           <div className="flex-1">
-            <div className="mb-2 flex justify-between text-[10px] font-semibold text-slate-400"><span>{formatTime(progress)}</span><span>{formatTime(100)}</span></div>
-            <div className="progress-track h-1"><div className="progress-fill fill-cyan" style={{ width: `${Math.max(progress, 2)}%` }} /></div>
+            <div className="mb-2 flex justify-between text-[10px] font-semibold text-zinc-600"><span>{formatTime(progress)}</span><span>{formatTime(100)}</span></div>
+            <div className="progress-track h-1"><div className="progress-fill fill-emerald" style={{ width: `${Math.max(progress, 2)}%` }} /></div>
           </div>
-          <Volume2 size={18} className="text-slate-300" />
+          <Volume2 size={18} className="text-zinc-700" />
         </div>
       </div>
-
-      {/* Suggested questions */}
-      <div className="mt-6">
-        <p className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-400">{t.suggestedQuestions}</p>
-        <div className="flex flex-wrap gap-2">
-          {suggestedQuestions.map((q) => (
-            <button key={q} onClick={() => sendQuestion(q)} className="question-chip"><MessageCircle size={13} />{q}</button>
-          ))}
-        </div>
-      </div>
-
-      {/* Q&A history */}
+      <div className="mt-6"><p className="mb-3 text-xs font-bold uppercase tracking-wider text-zinc-600">Suggested questions</p><div className="flex flex-wrap gap-2">{suggestedQuestions.map((q) => <button key={q} onClick={() => sendQuestion(q)} className="question-chip"><MessageSquareText size={13} />{q}</button>)}</div></div>
       {qaList.length > 0 && (
         <div className="mt-5 space-y-3">
           {qaList.map((item, i) => (
             <div key={i} className={item.role === 'user' ? 'flex justify-end' : ''}>
-              <div className={item.role === 'user' ? 'max-w-[80%] rounded-2xl rounded-br-md bg-sky-500 px-4 py-3 text-sm font-medium text-white' : 'answer-bubble max-w-[92%]'}>
-                {item.text}
-              </div>
+              <div className={item.role === 'user' ? 'max-w-[80%] rounded-2xl rounded-br-md border border-zinc-700 bg-zinc-800 px-4 py-3 text-sm font-medium text-zinc-100' : 'answer-bubble max-w-[92%]'}>{item.text}</div>
             </div>
           ))}
-          {isThinking && (
-            <div className="answer-bubble flex items-center gap-2 text-sky-600">
-              <Sparkles size={15} className="animate-pulse" />{t.thinking}…
-            </div>
-          )}
+          {isThinking && <div className="answer-bubble flex items-center gap-2"><span className="typing-dot" /><span className="typing-dot" /><span className="typing-dot" /></div>}
         </div>
       )}
-
-      {/* Ask input */}
       <div className="mt-5 flex items-center gap-3">
-        <input className="qa-input" placeholder={t.askAnything} value={question} onChange={(e) => setQuestion(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') sendQuestion(question); }} />
-        <button onClick={() => sendQuestion(question)} className="primary-button shrink-0"><Send size={15} />{t.send}</button>
+        <input className="qa-input" placeholder="Ask a question about this lecture" value={question} onChange={(e) => setQuestion(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') sendQuestion(question); }} />
+        <button onClick={() => sendQuestion(question)} className="primary-button shrink-0"><Send size={15} />Send</button>
       </div>
     </motion.div>
   );
 }
 
-/* ============ Mind map (interactive) ============ */
+/* ============ Mind Map ============ */
 
 type MindNode = typeof initialMindNodes[number];
-function VisualPanel({ t }: { t: Copy }) {
+function MindMapPanel() {
   const [nodes, setNodes] = useState<MindNode[]>(initialMindNodes);
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [addingTo, setAddingTo] = useState<string | null>(null);
   const [newName, setNewName] = useState('');
 
-  const toggleNode = (id: string) => setExpanded((prev) => {
-    const next = new Set(prev);
-    if (next.has(id)) next.delete(id); else next.add(id);
-    return next;
-  });
-
+  const toggleNode = (id: string) => setExpanded((prev) => { const n = new Set(prev); if (n.has(id)) n.delete(id); else n.add(id); return n; });
   const addChild = (id: string, name: string) => {
     if (!name.trim()) return;
     setNodes((prev) => prev.map((n) => n.id === id && n.children ? { ...n, children: [...n.children, name.trim()] } : n));
     setExpanded((prev) => new Set(prev).add(id));
   };
-  const removeChild = (parentId: string, idx: number) => {
-    setNodes((prev) => prev.map((n) => n.id === parentId && n.children ? { ...n, children: n.children.filter((_, i) => i !== idx) } : n));
-  };
+  const removeChild = (parentId: string, idx: number) => setNodes((prev) => prev.map((n) => n.id === parentId && n.children ? { ...n, children: n.children.filter((_, i) => i !== idx) } : n));
 
-  const childPositions: Record<string, { top: string; left: string }> = {
+  const childPositions: Record<string, { top: string; left?: string; bottom?: string; right?: string }> = {
     top: { top: '2%', left: '50%' },
     right: { top: '70%', right: '7%' },
     bottom: { top: 'auto', bottom: '2%', left: '50%' },
@@ -874,44 +778,35 @@ function VisualPanel({ t }: { t: Copy }) {
 
   return (
     <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} className="mx-auto max-w-4xl">
-      <div className="mb-5"><h2 className="text-xl font-bold text-slate-800">{t.mindmapTitle}</h2><p className="mt-1 text-xs text-slate-500">{t.mindmapBody}</p></div>
+      <div className="mb-5"><h2 className="text-lg font-bold text-zinc-50">Mind map</h2><p className="mt-1 text-xs text-zinc-600">Click any node to expand. Use + to add sub-topics.</p></div>
       <div className="mindmap-card">
         <div className="map-line line-one" /><div className="map-line line-two" /><div className="map-line line-three" /><div className="map-line line-four" />
         {nodes.map((node) => (
           <div key={node.id}>
-            <div
-              className={`map-node map-${node.kind}`}
-              onClick={() => node.kind !== 'center' && toggleNode(node.id)}
-              style={node.kind === 'center' ? undefined : { cursor: 'pointer' }}
-            >
+            <div className={`map-node map-${node.kind}`} onClick={() => node.kind !== 'center' && toggleNode(node.id)} style={node.kind !== 'center' ? { cursor: 'pointer' } : undefined}>
               {node.kind === 'center' ? <BrainCircuit size={23} /> : node.kind === 'top' ? <Lightbulb size={17} /> : node.kind === 'right' ? <Clock3 size={17} /> : node.kind === 'bottom' ? <Target size={17} /> : <Sparkles size={17} />}
-              <span>{node.label}</span>
-              <small>{node.sub}</small>
+              <span>{node.label}</span><small>{node.sub}</small>
               {node.kind !== 'center' && (
                 <div className="mt-1.5 flex items-center gap-1">
                   <button onClick={(e) => { e.stopPropagation(); setAddingTo(addingTo === node.id ? null : node.id); setNewName(''); }} className="map-add"><Plus size={13} /></button>
-                  {expanded.has(node.id) && <span className="text-[9px] text-slate-400">{node.children?.length || 0}</span>}
+                  {expanded.has(node.id) && <span className="text-[9px] text-zinc-600">{node.children?.length || 0}</span>}
                 </div>
               )}
             </div>
-
-            {/* Add sub-topic input */}
             {addingTo === node.id && (
               <div className="absolute z-20" style={childPositions[node.kind]}>
-                <div className="flex items-center gap-2 rounded-xl border border-sky-200 bg-white p-2 shadow-lg">
-                  <input className="w-36 border-none text-xs text-slate-700 outline-none placeholder:text-slate-300" placeholder={t.nodeName} value={newName} onChange={(e) => setNewName(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { addChild(node.id, newName); setNewName(''); setAddingTo(null); } }} autoFocus />
-                  <button onClick={() => { addChild(node.id, newName); setNewName(''); setAddingTo(null); }} className="rounded-md bg-sky-500 px-2 py-1 text-[10px] font-bold text-white"><Check size={12} /></button>
+                <div className="flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900 p-2 shadow-xl">
+                  <input className="w-36 border-none bg-transparent text-xs text-zinc-200 outline-none placeholder:text-zinc-700" placeholder="Sub-topic name" value={newName} onChange={(e) => setNewName(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { addChild(node.id, newName); setNewName(''); setAddingTo(null); } }} autoFocus />
+                  <button onClick={() => { addChild(node.id, newName); setNewName(''); setAddingTo(null); }} className="rounded-md bg-emerald-500 px-2 py-1 text-[10px] font-bold text-emerald-950"><Check size={12} /></button>
                 </div>
               </div>
             )}
-
-            {/* Expanded children */}
             {expanded.has(node.id) && node.children && (
               <div className="absolute z-10 flex flex-col gap-1.5" style={childPositions[node.kind]}>
                 {node.children.map((child, idx) => (
                   <div key={`${child}-${idx}`} className="map-node map-child flex-row items-center !flex-row !gap-2 !text-left" style={{ position: 'relative', transform: 'none', top: 'auto', left: 'auto', right: 'auto', bottom: 'auto' }}>
                     <span className="!text-[11px]">{child}</span>
-                    <button onClick={(e) => { e.stopPropagation(); removeChild(node.id, idx); }} className="ml-auto rounded p-0.5 text-slate-300 hover:text-rose-500"><X size={11} /></button>
+                    <button onClick={(e) => { e.stopPropagation(); removeChild(node.id, idx); }} className="ml-auto rounded p-0.5 text-zinc-700 hover:text-rose-400"><X size={11} /></button>
                   </div>
                 ))}
               </div>
@@ -919,45 +814,34 @@ function VisualPanel({ t }: { t: Copy }) {
           </div>
         ))}
       </div>
-      <p className="mt-4 text-center text-[11px] text-slate-400">Click any branch node to expand its sub-topics. Use the + button to add your own.</p>
     </motion.div>
   );
 }
 
 /* ============ Analyze modal ============ */
 
-function AnalyzeModal({ step, name, t, onClose }: { step: number; name: string; t: Copy; onClose: () => void }) {
-  const done = step >= t.analyzingSteps.length - 1;
-  const progress = Math.round(((step + 1) / t.analyzingSteps.length) * 100);
+function AnalyzeModal({ step, name, onClose }: { step: number; name: string; onClose: () => void }) {
+  const steps = ['Extracting text from your file', 'Identifying key concepts', 'Generating debate scenarios', 'Building your study session'];
+  const done = step >= steps.length - 1;
+  const progress = Math.round(((step + 1) / steps.length) * 100);
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/30 p-5 backdrop-blur-sm">
-      <motion.div initial={{ opacity: 0, y: 18, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }} className="relative w-full max-w-md rounded-3xl border border-slate-200 bg-white p-7 shadow-2xl">
-        <button onClick={onClose} className="absolute right-5 top-5 rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700"><X size={16} /></button>
-        <div className={`mx-auto flex h-16 w-16 items-center justify-center rounded-2xl ${done ? 'bg-emerald-50 text-emerald-500' : 'bg-sky-50 text-sky-500'}`}>
-          {done ? <Check size={28} /> : <BrainCircuit size={28} className="animate-pulse" />}
-        </div>
-        <div className="mt-6 text-center">
-          <h2 className="text-lg font-bold text-slate-800">{done ? t.ready : t.analyzing}</h2>
-          <p className="mt-2 text-xs text-slate-400">{done ? 'Your study session is ready to explore.' : 'The AI is reading your lecture and building your session.'}</p>
-        </div>
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-5 backdrop-blur-sm">
+      <motion.div initial={{ opacity: 0, y: 18, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }} className="relative w-full max-w-md rounded-2xl border border-zinc-800 bg-zinc-900 p-7">
+        <button onClick={onClose} className="absolute right-5 top-5 rounded-lg p-1.5 text-zinc-600 hover:bg-zinc-800 hover:text-zinc-300"><X size={16} /></button>
+        <div className={`mx-auto flex h-16 w-16 items-center justify-center rounded-2xl ${done ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-500/10 text-emerald-400'}`}>{done ? <Check size={28} /> : <BrainCircuit size={28} className="animate-pulse" />}</div>
+        <div className="mt-6 text-center"><h2 className="text-lg font-bold text-zinc-50">{done ? 'Session ready' : 'Analyzing your lecture'}</h2><p className="mt-2 text-xs text-zinc-500">{done ? 'Your debate is ready to begin.' : 'The AI is reading your lecture and building your session.'}</p></div>
         <div className="mt-6 space-y-2.5">
-          {t.analyzingSteps.map((s, i) => (
+          {steps.map((s, i) => (
             <div key={s} className="flex items-center gap-3">
-              <div className={`flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold ${i < step ? 'bg-emerald-500 text-white' : i === step ? 'bg-sky-500 text-white' : 'bg-slate-100 text-slate-400'}`}>
-                {i < step ? <Check size={12} /> : i + 1}
-              </div>
-              <span className={`text-xs ${i <= step ? 'font-semibold text-slate-700' : 'text-slate-400'}`}>{s}</span>
+              <div className={`flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold ${i < step ? 'bg-emerald-500 text-emerald-950' : i === step ? 'bg-emerald-500 text-emerald-950' : 'bg-zinc-800 text-zinc-600'}`}>{i < step ? <Check size={12} /> : i + 1}</div>
+              <span className={`text-xs ${i <= step ? 'font-semibold text-zinc-300' : 'text-zinc-600'}`}>{s}</span>
             </div>
           ))}
         </div>
-        <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-3">
-          <div className="flex items-center gap-3">
-            <FileText size={17} className="text-sky-500" />
-            <span className="min-w-0 flex-1 truncate text-xs font-medium text-slate-600">{name}</span>
-            <span className="text-[10px] font-bold text-sky-500">{progress}%</span>
-          </div>
-          <div className="relative mt-3 h-1.5 overflow-hidden rounded-full bg-slate-200">
-            <div className="absolute inset-y-0 left-0 rounded-full bg-sky-500 transition-all duration-500" style={{ width: `${progress}%` }} />
+        <div className="mt-6 rounded-xl border border-zinc-800 bg-zinc-950 p-3">
+          <div className="flex items-center gap-3"><FileText size={17} className="text-emerald-400" /><span className="min-w-0 flex-1 truncate text-xs font-medium text-zinc-400">{name}</span><span className="text-[10px] font-bold text-emerald-400">{progress}%</span></div>
+          <div className="relative mt-3 h-1.5 overflow-hidden rounded-full bg-zinc-800">
+            <div className="absolute inset-y-0 left-0 rounded-full bg-emerald-500 transition-all duration-500" style={{ width: `${progress}%` }} />
             {!done && <div className="scan-line absolute inset-y-0 w-1/3" />}
           </div>
         </div>
@@ -966,16 +850,39 @@ function AnalyzeModal({ step, name, t, onClose }: { step: number; name: string; 
   );
 }
 
-/* ============ Draft view for sidebar pages ============ */
+/* ============ Rankings ============ */
 
-function DraftView({ t, title, icon, onBack }: { t: Copy; title: string; icon: React.ReactNode; onBack: () => void }) {
+function Rankings({ onBack }: { onBack: () => void }) {
   return (
-    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} className="mx-auto max-w-3xl px-5 py-10 sm:px-8 lg:px-10">
-      <button onClick={onBack} className="mb-8 flex items-center gap-2 text-xs font-semibold text-slate-400 transition hover:text-sky-500"><ArrowLeft size={15} />{t.back}</button>
+    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} className="mx-auto max-w-2xl px-5 py-8 sm:px-8 lg:px-10">
+      <button onClick={onBack} className="mb-8 flex items-center gap-2 text-xs font-semibold text-zinc-600 transition hover:text-emerald-400"><ArrowLeft size={15} />Back to overview</button>
+      <div className="panel p-6">
+        <div className="mb-5 flex items-center justify-between"><div><h1 className="section-title">Mastery Rankings</h1><p className="mt-1 text-xs text-zinc-600">This month's leaderboard</p></div><Trophy size={22} className="text-amber-500" /></div>
+        <div className="space-y-3">{peers.map((peer, i) => (
+          <div key={peer.name} className={`flex items-center gap-4 rounded-xl p-3 ${peer.current ? 'bg-emerald-500/[0.06] ring-1 ring-emerald-500/10' : ''}`}>
+            <span className={`w-5 text-center text-sm font-bold ${i < 3 ? 'text-zinc-300' : 'text-zinc-700'}`}>{i + 1}</span>
+            <div className={`flex h-9 w-9 items-center justify-center rounded-full text-[10px] font-bold text-white ${peer.color}`}>{peer.initials}</div>
+            <span className={`min-w-0 flex-1 truncate text-sm ${peer.current ? 'font-semibold text-zinc-100' : 'text-zinc-400'}`}>{peer.name}</span>
+            <span className="text-sm font-semibold text-zinc-300">{peer.points.toLocaleString()}</span>
+            {i === 0 && <Trophy size={16} className="text-amber-500" />}
+          </div>
+        ))}
+      </div>
+      </div>
+    </motion.div>
+  );
+}
+
+/* ============ Draft view ============ */
+
+function DraftView({ title, icon, onBack }: { title: string; icon: React.ReactNode; onBack: () => void }) {
+  return (
+    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} className="mx-auto max-w-2xl px-5 py-10 sm:px-8 lg:px-10">
+      <button onClick={onBack} className="mb-8 flex items-center gap-2 text-xs font-semibold text-zinc-600 transition hover:text-emerald-400"><ArrowLeft size={15} />Back to overview</button>
       <div className="draft-card flex flex-col items-center gap-4 py-16 text-center">
         <div className="empty-illustration">{icon}</div>
-        <h1 className="text-xl font-bold text-slate-800">{title}</h1>
-        <p className="mt-1 max-w-sm text-sm text-slate-500">{t.comingSoonBody}</p>
+        <h1 className="text-xl font-bold text-zinc-100">{title}</h1>
+        <p className="max-w-sm text-sm text-zinc-600">This section is wired up and ready for you to build out. It shows a clean placeholder for now.</p>
       </div>
     </motion.div>
   );
